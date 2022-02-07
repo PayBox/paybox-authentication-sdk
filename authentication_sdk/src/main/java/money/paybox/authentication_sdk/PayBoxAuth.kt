@@ -12,7 +12,7 @@ import org.json.JSONObject
 import java.util.HashMap
 
 @Suppress("unused")
-class PayBoxMFS(private var activity: Activity,
+class PayBoxAuth(private var activity: Activity,
                 private var authView: AuthView?,
                 private var slug: String,
                 private var secretKey: String,
@@ -187,6 +187,6 @@ class PayBoxMFS(private var activity: Activity,
 
         fun setLanguage(language: Language) = apply { this.language = language }
 
-        fun build() = PayBoxMFS(this)
+        fun build() = PayBoxAuth(this)
     }
 }
