@@ -1,7 +1,6 @@
 package money.paybox.authentication_sdk.ui
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
 import android.os.Build
@@ -23,7 +22,7 @@ import java.lang.Exception
 
 class AuthView : FrameLayout {
 
-    private var listenerActivity: Activity? = null
+    private var listener: EventListener? = null
     private lateinit var webView: WebView
 
     constructor(context: Context) : super(context)
@@ -69,7 +68,7 @@ class AuthView : FrameLayout {
 
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
-                (listenerActivity as EventListener).onLoadStarted()
+                listener?.onLoadStarted()
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
@@ -81,7 +80,7 @@ class AuthView : FrameLayout {
                             "})()"
                 )
 
-                getListener()?.onLoadFinished()
+                listener?.onLoadFinished()
             }
 
             override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
@@ -91,23 +90,19 @@ class AuthView : FrameLayout {
 
     }
 
-    private fun getListener(): EventListener? {
-        return if (listenerActivity is EventListener) listenerActivity as EventListener else null
-    }
-
-    fun addListener(listener: Activity) {
-        listenerActivity = listener
+    fun addListener(listener: EventListener) {
+        this.listener = listener
     }
 
     @SuppressLint("AddJavascriptInterface")
     fun loadUrl(token: String, url: String) {
         val arr = url.split("token=")
         if (arr.size < 2) {
-            getListener()?.onError("Invalid URL")
+            listener?.onError("Invalid URL")
             return
         }
 
-        webView.addJavascriptInterface(JsObject(context, getListener(), token), "Android")
+        webView.addJavascriptInterface(JsObject(context, listener, token), "Android")
 
         webView.loadUrl(url)
     }

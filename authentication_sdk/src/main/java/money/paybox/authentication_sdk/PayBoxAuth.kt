@@ -6,29 +6,33 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import money.paybox.authentication_sdk.api.*
 import money.paybox.authentication_sdk.ui.AuthView
 import org.json.JSONObject
 import java.util.HashMap
 
 @Suppress("unused")
-class PayBoxAuth(private var activity: Activity,
-                private var authView: AuthView?,
-                private var slug: String,
-                private var secretKey: String,
-                private var token: String,
-                language: Language) {
+class PayBoxAuth {
+
+    private var activity: Activity? = null
+    private var fragment: Fragment? = null
+    private var authView: AuthView? = null
+    private var slug: String
+    private var secretKey: String
+    private lateinit var token: String
+    private var language: Language
 
     private val apiListener = object : ApiListener {
         override fun onAuth(result: ResponseData) {
             if (result.code == 200) {
                 val obj = JSONObject(result.response)
-                activity.runOnUiThread {
-                    getListener()?.let { authView?.addListener(activity) }
+                getActivity()?.runOnUiThread {
+                    getListener()?.let { authView?.addListener(getListener()!!) }
                     authView?.loadUrl(token, obj.getString("url"))
                 }
             } else {
-                activity.runOnUiThread {
+                getActivity()?.runOnUiThread {
                     getListener()?.onLoadFinished()
                     getListener()?.onError(result.response)
                 }
@@ -36,37 +40,73 @@ class PayBoxAuth(private var activity: Activity,
         }
 
         override fun onCheck(result: ResponseData) {
-            activity.runOnUiThread {
+            getActivity()?.runOnUiThread {
                 getListener()?.onLoadFinished()
             }
 
             if (result.code == 200) {
                 val obj = JSONObject(result.response)
-                activity.runOnUiThread {
-                    val helper = IdentificationHelper(activity, token)
+                getActivity()?.runOnUiThread {
+                    val helper = IdentificationHelper(getActivity()!!, token)
                     getListener()?.onCheck(helper.process(obj))
                 }
             } else {
-                activity.runOnUiThread {
+                getActivity()?.runOnUiThread {
                     getListener()?.onError(result.response)
                 }
             }
         }
     }
 
-    private val api: APIHandler = APIHandler(slug, secretKey, language, apiListener)
+    private var api: APIHandler
 
-    private constructor(builder: Builder) :
-            this(builder.activity, builder.authView, builder.slug, builder.secretKey, builder.token, builder.language)
+    private constructor(activity: Activity, authView: AuthView?, slug: String, secretKey: String, token: String, language: Language) {
+        this.activity = activity
+        this.authView = authView
+        this.slug = slug
+        this.secretKey = secretKey
+        this.token = token
+        this.language = language
+
+        api = APIHandler(slug, secretKey, language, apiListener)
+    }
+
+    private constructor(fragment: Fragment, authView: AuthView?, slug: String, secretKey: String, token: String, language: Language) {
+        this.fragment = fragment
+        this.authView = authView
+        this.slug = slug
+        this.secretKey = secretKey
+        this.token = token
+        this.language = language
+
+        api = APIHandler(slug, secretKey, language, apiListener)
+    }
+
+    private constructor(builder: Builder) /*: this(builder.activity, builder.authView, builder.slug, builder.secretKey, builder.token, builder.language)*/ {
+        this.activity = builder.activity
+        this.fragment = builder.fragment
+        this.authView = builder.authView
+        this.slug = builder.slug
+        this.secretKey = builder.secretKey
+        this.token = builder.token
+        this.language = builder.language
+
+        api = APIHandler(slug, secretKey, language, apiListener)
+    }
+
 
     private fun runInspection(authViewRequired: Boolean): Boolean {
+        if(getActivity() == null) {
+            return true
+        }
+
         if(authViewRequired) {
             if(authView == null) {
                 getListener()?.onError("AuthView is required")
                 return true
             }
 
-            if(ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA)
+            if(ContextCompat.checkSelfPermission(getActivity()!!, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
                 getListener()?.onError("Camera permission not granted")
                 return true
@@ -113,7 +153,7 @@ class PayBoxAuth(private var activity: Activity,
     fun checkLast() {
         if(runInspection(false)) return
 
-        val pref = PreferencesManager(activity)
+        val pref = PreferencesManager(getActivity()!!)
 
         val map = HashMap<String, Any>()
         map["id"] = pref.getID()
@@ -157,11 +197,42 @@ class PayBoxAuth(private var activity: Activity,
         api.check(map)
     }
 
-    private fun getListener(): EventListener? {
-        return if (activity is EventListener) activity as EventListener else null
+    private fun getActivity() : Activity? {
+        if (activity != null ) {
+            return activity!!
+        }
+
+        if (fragment != null) {
+            return fragment!!.activity
+        }
+
+        return null
     }
 
-    class Builder(val activity: Activity) {
+    private fun getListener(): EventListener? {
+        if (activity != null && activity is EventListener) {
+            return activity as EventListener
+        }
+
+        if(fragment != null && fragment is EventListener) {
+            return fragment as EventListener
+        }
+
+        return null
+    }
+
+    class Builder {
+        var activity: Activity? = null
+        var fragment: Fragment? = null
+
+        constructor(activity: Activity) {
+            this.activity = activity
+        }
+
+        constructor(fragment: Fragment) {
+            this.fragment = fragment
+        }
+
         var authView: AuthView? = null
             private set
 

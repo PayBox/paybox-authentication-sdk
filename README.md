@@ -34,12 +34,12 @@ dependencyResolutionManagement {
 2.Добавьте в ваш build.gradle:
 ```
 dependencies {
-	implementation 'com.github.PayBox:paybox-authentication-sdk:1.0.1'
+	implementation 'com.github.PayBox:paybox-authentication-sdk:1.0.2'
 }
 ```
 ---
 # Настройка SDK
-1. Для отслеживания прогресса загрузки и получения ответа от SDK нeобходимо имплементировать интерфейс EventListener в вашем Activity:
+1. Для отслеживания прогресса загрузки и получения ответа от SDK нeобходимо имплементировать интерфейс EventListener в вашем Activity/Fragment:
 ```
 class MainActivity : AppCompatActivity(), EventListener {
   // ...
@@ -105,7 +105,7 @@ class MainActivity : AppCompatActivity(), EventListener {
 }  
 ```
 
-2. Добавьте AuthView в ваше activity:
+2. Добавьте AuthView в ваше activity/fragment:
  ```
  <money.paybox.authentication_sdk.ui.AuthView
         android:id="@+id/authView"
