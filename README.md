@@ -8,6 +8,10 @@ Authentication SDK for Android by PayBox.money
 
 Библиотека для идентификации пользователей
 
+[Исходный код демонстрационного приложения](https://github.com/PayBox/authentication-sample-android)
+
+<img src="https://github.com/PayBox/authentication-sample-android/raw/master/Screenshot_1644578950.png" width="25%" height="25%"/>
+
 # **Установка:**
 
 1. Добавьте репозитории Jitpack в ваш build.gradle или settings.gradle :
@@ -34,7 +38,7 @@ dependencyResolutionManagement {
 2.Добавьте в ваш build.gradle:
 ```
 dependencies {
-	implementation 'com.github.PayBox:paybox-authentication-sdk:1.0.3'
+	implementation 'com.github.paybox:paybox-authentication-sdk:1.0.3'
 }
 ```
 ---
