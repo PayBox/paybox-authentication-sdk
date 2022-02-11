@@ -34,7 +34,7 @@ dependencyResolutionManagement {
 2.Добавьте в ваш build.gradle:
 ```
 dependencies {
-	implementation 'com.github.PayBox:paybox-authentication-sdk:1.0.2'
+	implementation 'com.github.PayBox:paybox-authentication-sdk:1.0.3'
 }
 ```
 ---
